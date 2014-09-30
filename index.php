@@ -22,6 +22,7 @@ if(!has_capability('report/ae_reports:view', $context)){
 
 // ************  
 // ** variables
+
 $groupid = optional_param('g', null, PARAM_TEXT);
 $report = optional_param('r', null, PARAM_TEXT);
 $cssurl = $baseurl."styles.css";    // easy CSS style linking
@@ -34,9 +35,53 @@ $go_button = get_string("gobutton",$plugin);
 // based on report selection
 switch($report){
 	case 'roster':
-		$roster_report = new moodle_url("/report/ae_reports/roster.php",array('g' => $groupid));
-		redirect($roster_report);
-		break;
+		$start_date = optional_param('start',null,PARAM_TEXT);
+		$end_date = optional_param('end',null,PARAM_TEXT);
+		$subject = optional_param('s',null,PARAM_TEXT);
+		if(!empty($groupid)){
+			$params['g'] = $groupid;
+		}
+		if(!empty($start_date)){
+			$start_date = date("Y-m-d", strtotime($start_date));
+			$params['start'] = $start_date;
+		}
+		if(!empty($end_date)){
+			$end_date = date("Y-m-d", strtotime($end_date));
+			$params['end'] = $end_date;
+		}
+		if(!empty($subject)){
+			$params['s'] = $subject;
+		}
+		if($debug){
+			var_dump($params);
+		} else {
+			$report_url = new moodle_url("/report/ae_reports/timeontask.php",$params);
+			redirect($report_url);
+		}
+	case 'avgtot':
+		$start_date = optional_param('start',null,PARAM_TEXT);
+		$end_date = optional_param('end',null,PARAM_TEXT);
+		$subject = optional_param('s',null,PARAM_TEXT);
+		if(!empty($groupid)){
+			$params['g'] = $groupid;
+		}
+		if(!empty($start_date)){
+			$start_date = date("Y-m-d", strtotime($start_date));
+			$params['start'] = $start_date;
+		}
+		if(!empty($end_date)){
+			$end_date = date("Y-m-d", strtotime($end_date));
+			$params['end'] = $end_date;
+		}
+		if(!empty($subject)){
+			$params['s'] = $subject;
+		}
+		if($debug){
+			var_dump($params);
+		} else {
+			$report_url = new moodle_url("/report/ae_reports/average.php",$params);
+			redirect($report_url);
+		}
 	default:
 		break;
 }
@@ -83,34 +128,155 @@ if( has_capability('local/ketlicense:manageall', $context) ) {
 
 
 $groups = $DB->get_records_sql($groups_sql,array($USER->id));
-//print_r($groups);
-//die($groups_sql);
 
 
-// start form
+/*
+if(has_capability('report/ae_reports:admin_reports', $context)){
+// start roster form
 $output = html_writer::start_tag('div',array('class' => 'ae_reports_form'));
-$output .= html_writer::start_tag('form',array('method' => 'GET', 'action' => $submit_url));
+$output .= html_writer::start_tag('form',array('method' => 'POST', 'action' => $submit_url));
+$output .= html_writer::nonempty_tag('h3','Roster');
+
+// hidden report field
+$output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'r', 'value'=>'roster'));
+
+$output .= html_writer::start_tag('p');
+// build options for select
 $options = array();
 // loop thru course categories
 foreach($groups as $group){
 	// grab courses for current category
 	$options[$group->id] = $group->cohortname;
 }
-
-// hidden report
-$output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'r', 'value'=>'roster'));
-
-// build output
+// build cohort select
 $dropdown_output = html_writer::select($options, 'g', 'test', 'Select Below', array('class' => 'ae_reports_select'));
-
+$output .= html_writer::tag('label', 'Class', array( 'for' => 'g', 'class' => 'ae_reports_label' ));
 $output .= $dropdown_output;
 $output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => $go_button));
 $output .= html_writer::end_tag('form');
 $output .= html_writer::end_tag('p');
 $output .= html_writer::end_tag('div');
+// end roster form
+*/
+
+if(has_capability('report/ae_reports:teacher_reports', $context)){
+	// start timeontask form
+	$output .= html_writer::start_tag('div',array('class' => 'ae_reports_form'));
+	$output .= html_writer::start_tag('form',array('method' => 'POST', 'action' => $submit_url));
+	$output .= html_writer::nonempty_tag('h3','Average Time on Task');
+	
+	// hidden report field
+	$output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'r', 'value'=>'avgtot'));
+
+	// build options for cohort select
+	$options = array();
+	// loop thru course categories
+	foreach($groups as $group){
+		// grab courses for current category
+		$options[$group->id] = $group->cohortname;
+	}
+	// build cohort select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'Class', array( 'for' => 'g', 'class' => 'ae_reports_label' ));
+	$dropdown_output = html_writer::select($options, 'g', 'test', 'Select Below', array('class' => 'ae_reports_select'));
+	$output .= $dropdown_output;
+	$output .= html_writer::end_tag('p');
+
+	// subject select options
+	$options = array();
+	$options['math'] = 'Math';
+	$options['science'] = 'Science';
+	$options['socstudy'] = 'Social Studies';
+	$options['language'] = 'Language Arts';
+
+	// build subject select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'Subject', array( 'for' => 's', 'class' => 'ae_reports_label' ));
+	$dropdown_output = html_writer::select($options, 's', 'test', 'Select Below', array('class' => 'ae_reports_select'));
+	$output .= $dropdown_output;
+	$output .= html_writer::end_tag('p');
+
+	// build start date select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'Start Date', array( 'for' => 'start', 'class' => 'ae_reports_label' ));
+	$output .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'start', 'id' => 'start', 'class' => 'ae_reports_input'));
+	$output .= html_writer::end_tag('p');
+
+	// build end date select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'End Date', array( 'for' => 'end', 'class' => 'ae_reports_label' ));
+	$output .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'end', 'id' => 'end', 'class' => 'ae_reports_input'));
+	$output .= html_writer::end_tag('p');
+
+	// build submit button
+	$output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => $go_button));
+	$output .= html_writer::end_tag('form');
+	$output .= html_writer::end_tag('p');
+	$output .= html_writer::end_tag('div');
+	// end timeontask form
+}
+
+if(has_capability('report/ae_reports:teacher_reports', $context)){
+	// start timeontask form
+	$output .= html_writer::start_tag('div',array('class' => 'ae_reports_form'));
+	$output .= html_writer::start_tag('form',array('method' => 'POST', 'action' => $submit_url));
+	$output .= html_writer::nonempty_tag('h3','Roster Time on Task');
+	
+	// hidden report field
+	$output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'r', 'value'=>'roster'));
+
+	// build options for cohort select
+	$options = array();
+	// loop thru course categories
+	foreach($groups as $group){
+		// grab courses for current category
+		$options[$group->id] = $group->cohortname;
+	}
+	// build cohort select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'Class', array( 'for' => 'g', 'class' => 'ae_reports_label' ));
+	$dropdown_output = html_writer::select($options, 'g', 'test', 'Select Below', array('class' => 'ae_reports_select'));
+	$output .= $dropdown_output;
+	$output .= html_writer::end_tag('p');
+
+	// subject select options
+	$options = array();
+	$options['math'] = 'Math';
+	$options['science'] = 'Science';
+	$options['socstudy'] = 'Social Studies';
+	$options['language'] = 'Language Arts';
+
+	// build subject select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'Subject', array( 'for' => 's', 'class' => 'ae_reports_label' ));
+	$dropdown_output = html_writer::select($options, 's', 'test', 'Select Below', array('class' => 'ae_reports_select'));
+	$output .= $dropdown_output;
+	$output .= html_writer::end_tag('p');
+
+	// build start date select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'Start Date', array( 'for' => 'start', 'class' => 'ae_reports_label' ));
+	$output .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'start', 'id' => 'start', 'class' => 'ae_reports_input'));
+	$output .= html_writer::end_tag('p');
+
+	// build end date select
+	$output .= html_writer::start_tag('p');
+	$output .= html_writer::tag('label', 'End Date', array( 'for' => 'end', 'class' => 'ae_reports_label' ));
+	$output .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'end', 'id' => 'end', 'class' => 'ae_reports_input'));
+	$output .= html_writer::end_tag('p');
+
+	// build submit button
+	$output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => $go_button));
+	$output .= html_writer::end_tag('form');
+	$output .= html_writer::end_tag('p');
+	$output .= html_writer::end_tag('div');
+	// end timeontask form
+}
+
 
 $PAGE->set_url('/report/ae_reports/index.php');
-$PAGE->requires->css($cssurl);
+//$PAGE->requires->css($cssurl);
+//$PAGE->requires->js('/report/ae_reports/ae_reports.js');
 $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title($page_title);
@@ -120,6 +286,12 @@ $PAGE->navbar->add("AE Reports", $index_url);
 
 
 echo $OUTPUT->header();
+echo '<link rel="stylesheet" href="styles.css">';
+echo '<link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">';
+//echo '<link rel="stylesheet" href="'.$cssurl.'">';
+echo '<script src="//code.jquery.com/jquery-1.10.2.js"></script>';
+echo '<script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>';
+echo '<script src="ae_reports.js"></script>';
 echo $output;
 echo $OUTPUT->footer();
 ?>

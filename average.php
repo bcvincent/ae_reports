@@ -30,7 +30,7 @@ require_login();
 
 
 $context = context_system::instance();
-if(!has_capability('report/ae_reports:view', $context)){
+if(!has_capability('report/ae_reports:admin_reports', $context)){
     die("Missing required permissions to view this page.");
 }
 
@@ -39,6 +39,7 @@ $groupid = optional_param('g', null, PARAM_TEXT);
 $start_date = optional_param('start',null,PARAM_TEXT);
 $end_date = optional_param('end',null,PARAM_TEXT);
 $subject = optional_param('s',null,PARAM_TEXT);
+$type = optional_param('type',null,PARAM_TEXT);
 $debug = optional_param('debug',null,PARAM_TEXT);
 
 $cssurl = $baseurl."styles.css";    // easy CSS style linking
@@ -113,9 +114,7 @@ if($subject){
 }
 
 $usersinfo_sql  = 'SELECT '
-                . 'u.id, '
-                . 'concat(u.firstname," ",u.lastname) as "Name", '
-                . 'u.email as "Email" '
+                . 'u.id '
                 . 'FROM '
                 . '{user} u '
                 . 'JOIN '
@@ -138,19 +137,10 @@ foreach($users as $user){
 	foreach($user as $key => $value){
 		$temparray[$key] = $value;
 	}
-	$temparray['phone'] = get_user_phone($user->id);
 	$timeontask = get_user_timeontask_subj($user->id,$subject);
 	$timeontask_int = new DateInterval("PT".$timeontask."S");
 	$temparray['time on task'] = format_timeontask($timeontask);
-	$last_logged = get_user_lastlogged($user->id);
-	if($last_logged == NULL) {
-		$temparray['last login'] = "Never";
-	} else {
-		$temparray['last login'] = date("Y-m-d",$last_logged);
-	}
-	$temparray['days inactive'] = get_user_timeinactive($user->id);
 	$user_data[$array_count] = $temparray;
-	
 	$tot_diff->add($timeontask_int);
 	$array_count++;
 }
@@ -158,9 +148,6 @@ unset($user);
 
 $tot_seconds = $tot_diff->getTimestamp() - $tot_start->getTimestamp();
 $avg_seconds = $tot_seconds / sizeof($users);
-
-
-
 
 switch($type){
 
@@ -170,13 +157,13 @@ switch($type){
 		header("Pragma: no-cache");
 		header("Expires: 0");
 		//echo generate_csv($user_data,"id",false);
-		echo generate_csv($user_data,"id");
+//		echo generate_csv($user_data,"id");
 		echo "Total Records,".sizeof($users).PHP_EOL;
 		echo "Total Time on Task,".gmdate("H:i:s",$avg_seconds).PHP_EOL;
 		break;
 	default:
 			
-		$PAGE->set_url('/report/ae_reports/timeontask.php');
+		$PAGE->set_url('/report/ae_reports/average.php');
 		$PAGE->requires->css($cssurl);
 		$PAGE->requires->js($tablejsurl);
 		$PAGE->requires->js($accjsurl);
@@ -200,14 +187,14 @@ switch($type){
 				var_dump($user_data);
 			} else {
 				echo html_writer::start_tag('div',array('id' => 'ae_reports_display'));
-				//echo html_writer::start_tag('div',array('class' => 'ae_reports_view'));
+				echo html_writer::start_tag('div',array('class' => 'ae_reports_view'));
 				echo html_writer::nonempty_tag('h3',"Average Time on Task: $group_heading");
 				echo html_writer::nonempty_tag('h5',"$subj_heading$start_heading$end_heading");
-				echo generate_html_table($user_data,"id");
-				//echo html_writer::nonempty_tag('p',"<strong>Reported Users</strong>: ".sizeof($user_data));
+				//echo generate_html_table($user_data,"id");
+				echo html_writer::nonempty_tag('p',"<strong>Reported Users</strong>: ".sizeof($user_data));
 				echo html_writer::nonempty_tag('p',"<strong>Time on Task</strong>: ".gmdate("H:i:s",$avg_seconds));
 				echo html_writer::link(new moodle_url($this_url,array( 'g' => $groupid,'type' => 'csv')),"Download CSV");
-				//echo html_writer::end_tag('div');
+				echo html_writer::end_tag('div');
 				echo html_writer::end_tag('div');
 			}
 		} else {

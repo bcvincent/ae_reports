@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->release   = 'v0.1.3';
+$plugin->release   = 'v0.1.4';
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->version   = 2014091902;      // The current module version (Date: YYYYMMDDXX)
+$plugin->version   = 2014093001;      // The current module version (Date: YYYYMMDDXX)
 $plugin->requires  = 2013050100;      // Requires this Moodle version
 $plugin->cron      = 0;               // Period for cron to check this module (secs)
 $plugin->component = 'report_ae_reports'; // To check on upgrade, that module sits in correct place
