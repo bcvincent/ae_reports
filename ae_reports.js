@@ -6,12 +6,32 @@ jQuery( document ).ready(function(){
 */
 
 jQuery( document ).ready(function() {
-  $( "#start" ).datepicker({
+  $( "#tot_start" ).datepicker({
     changeMonth: true,
     changeYear: true,
     minDate: null
   });
-  $( "#end" ).datepicker({
+  $( "#tot_end" ).datepicker({
+    changeMonth: true,
+    changeYear: true,
+    minDate: null
+  });
+  $( "#teacher_start" ).datepicker({
+    changeMonth: true,
+    changeYear: true,
+    minDate: null
+  });
+  $( "#teacher_end" ).datepicker({
+    changeMonth: true,
+    changeYear: true,
+    minDate: null
+  });
+  $( "#avg_start" ).datepicker({
+    changeMonth: true,
+    changeYear: true,
+    minDate: null
+  });
+  $( "#avg_end" ).datepicker({
     changeMonth: true,
     changeYear: true,
     minDate: null

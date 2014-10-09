@@ -472,3 +472,123 @@ function calculate_activity_time($time_one,$time_two,$subj=NULL){
 	} 
 	
 }
+
+
+/**
+ * grabs all teachers for a particular license
+ *
+ * returns array
+**/
+function get_roster_teacher($wheres, $params){
+	
+	global $DB;
+
+	/*
+	$role_wheres = " AND roles.role LIKE '%teacher%' AND roles.role NOT LIKE '%admin%' ";
+	
+	$usersinfo_sql  = 'SELECT '
+	                . 'u.id, '
+	                . 'concat(u.firstname," ",u.lastname) as "Name", '
+	                . 'u.email as "Email" '
+	                . 'FROM '
+	                . '{user} u '
+	                . 'JOIN '
+	                . '{ketlicense_member} member ON u.id = member.user '
+	                . 'JOIN '
+	                . '{ketlicense_user_roles} roles ON u.id = roles.user
+	                . 'WHERE '
+	                . "$wheres "
+	                . "$role_wheres "
+	                . " AND u.deleted = '0' "
+	                . 'ORDER BY '
+	                . 'u.lastname ASC ';
+	
+	*/
+	
+	$teacher_where = " AND member.selectedTypes LIKE '%teacher%' ";
+	
+	$usersinfo_sql  = 'SELECT '
+	                . 'u.id, '
+	                . 'concat(u.firstname," ",u.lastname) as "Name", '
+	                . 'u.email as "Email" '
+	                . 'FROM '
+	                . '{user} u '
+	                . 'JOIN '
+	                . '{ketlicense_member} member ON u.id = member.user '
+	                . 'WHERE '
+	                . "$wheres "
+	                . "$teacher_where "
+	                . " AND u.deleted = '0' "
+	                . 'ORDER BY '
+	                . 'u.lastname ASC ';
+		
+	
+	$users = $DB->get_records_sql($usersinfo_sql,$params);
+	$users = array_values($users);
+	if(sizeof($users)>0){
+		return $users;
+	} else {
+		return false;
+	}
+}
+
+
+
+/**
+ * grabs all students for a particular license
+ *
+ * returns array
+**/
+function get_roster_student($wheres, $params){
+	
+	global $DB;
+
+	/*
+	$role_wheres = " AND roles.role NOT LIKE '%teacher%' AND roles.role NOT LIKE '%admin%' ";
+	
+	$usersinfo_sql  = 'SELECT '
+	                . 'u.id, '
+	                . 'concat(u.firstname," ",u.lastname) as "Name", '
+	                . 'u.email as "Email" '
+	                . 'FROM '
+	                . '{user} u '
+	                . 'JOIN '
+	                . '{ketlicense_member} member ON u.id = member.user '
+	                . 'JOIN '
+	                . '{ketlicense_user_roles} roles ON u.id = roles.user
+	                . 'WHERE '
+	                . "$wheres "
+	                . "$role_wheres "
+	                . " AND u.deleted = '0' "
+	                . 'ORDER BY '
+	                . 'u.lastname ASC ';
+	
+	*/
+	
+	$teacher_where = " AND member.selectedTypes NOT LIKE '%teacher%' AND member.selectedTypes NOT LIKE '%admin%'";
+	
+	$usersinfo_sql  = 'SELECT '
+	                . 'u.id, '
+	                . 'concat(u.firstname," ",u.lastname) as "Name", '
+	                . 'u.email as "Email" '
+	                . 'FROM '
+	                . '{user} u '
+	                . 'JOIN '
+	                . '{ketlicense_member} member ON u.id = member.user '
+	                . 'WHERE '
+	                . "$wheres "
+	                . "$teacher_where "
+	                . " AND u.deleted = '0' "
+	                . 'ORDER BY '
+	                . 'u.lastname ASC ';
+		
+	
+	$users = $DB->get_records_sql($usersinfo_sql,$params);
+	$users = array_values($users);
+	if(sizeof($users)>0){
+		return $users;
+	} else {
+		return false;
+	}
+}
+

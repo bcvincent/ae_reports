@@ -113,19 +113,7 @@ if($subject){
 	}
 }
 
-$usersinfo_sql  = 'SELECT '
-                . 'u.id '
-                . 'FROM '
-                . '{user} u '
-                . 'JOIN '
-                . '{ketlicense_member} member ON u.id = member.user '
-                . 'WHERE '
-                . "$where_items "
-                . 'ORDER BY '
-                . 'u.lastname ASC ';
-	
-
-$users = $DB->get_records_sql($usersinfo_sql,$query_arr);
+$users = get_roster_student($where_items,$query_arr);
 $user_data = array();
 $array_count = 0;
 

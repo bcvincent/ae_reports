@@ -36,9 +36,9 @@ if(!has_capability('report/ae_reports:view', $context)){
 
 
 $groupid = optional_param('g', null, PARAM_TEXT);
-$start_date = optional_param('start',null,PARAM_TEXT);
-$end_date = optional_param('end',null,PARAM_TEXT);
-$subject = optional_param('s',null,PARAM_TEXT);
+$start_date = optional_param('teacher_start',null,PARAM_TEXT);
+$end_date = optional_param('teacher_start',null,PARAM_TEXT);
+//$subject = optional_param('s',null,PARAM_TEXT);
 $debug = optional_param('debug',null,PARAM_TEXT);
 
 $cssurl = $baseurl."styles.css";    // easy CSS style linking
@@ -92,6 +92,7 @@ if($end_date){
 	$end_heading = " - ".date("M j Y",strtotime($end_date));
 }
 
+/*
 // currently unused
 if($subject){
 	//$where_items .= " AND member.enddate < ? ";
@@ -111,8 +112,11 @@ if($subject){
 			break;
 	}
 }
+*/
 
-$users = get_roster_student($where_items, $query_arr);
+
+
+$users = get_roster_teacher($where_items,$query_arr);
 $user_data = array();
 $array_count = 0;
 
@@ -187,7 +191,7 @@ switch($type){
 			} else {
 				echo html_writer::start_tag('div',array('id' => 'ae_reports_display'));
 				//echo html_writer::start_tag('div',array('class' => 'ae_reports_view'));
-				echo html_writer::nonempty_tag('h3',"Roster with Time on Task: $group_heading");
+				echo html_writer::nonempty_tag('h3',"Teacher Time on Task: $group_heading");
 				echo html_writer::nonempty_tag('h5',"$subj_heading$start_heading$end_heading");
 				echo generate_html_table($user_data,"id");
 				//echo html_writer::nonempty_tag('p',"<strong>Reported Users</strong>: ".sizeof($user_data));
