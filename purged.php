@@ -2,7 +2,7 @@
 
 /**
  *
- *
+ * test here on branch bcvincent
  *
 **/
 function get_user_timeontask($userid, $debug = false){
